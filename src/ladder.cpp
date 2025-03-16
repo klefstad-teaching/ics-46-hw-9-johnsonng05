@@ -19,18 +19,37 @@ bool edit_distance_within(const std::string& str1, const std::string& str2, int 
     int len1 = str1.length();
     int len2 = str2.length();
 
-    if (abs(len1 - len2) > 1) return false;
-    
-    int i = 0, j = 0, diff = 0;
+    if (abs(len1 - len2) > d) {
+        return false;
+    }
+
+    int i = 0;
+    int j = 0;
+    int count = 0;
+
     while (i < len1 && j < len2) {
-        if (str1[i] != str2[j]) {
-            diff++;
-            if (diff > 1) return false;
-            if (len1 > len2) i++; // Deletion in word1
-            else if (len1 < len2) j++; // Insertion in word1
-            else { i++; j++; } // Substitution
-        } else {
-            i++; j++;
+        if (str1[i] == str2[j]) {
+            ++i;
+            ++j;
+        } 
+        else {
+            ++count;
+            if (count > d){
+                return false;
+            }
+
+            if (len1 > len2){
+                ++i;
+            }
+
+            else if (len1 < len2){
+                ++j;
+            }
+
+            else {
+                ++i;
+                ++j;
+            }
         }
     }
     return true;
@@ -43,6 +62,8 @@ bool is_adjacent(const string& word1, const string& word2){
 
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list){
+    if (!word_list.contains(end_word)) return {};
+
     queue<vector<string>> ladder_queue;
     ladder_queue.push({begin_word});
     set<string> visited;
@@ -57,8 +78,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
 
         for (auto &word : word_list){
 
-            if (is_adjacent(last_word, word)){
-                visited.insert(word);
+            if (is_adjacent(last_word, word) && visited.count(word) == 0){
                 vector<string> new_ladder = ladder;
                 new_ladder.push_back(word);
                 
@@ -67,6 +87,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
                 }
 
                 ladder_queue.push(new_ladder);
+                visited.insert(word);
 
             }
         }
@@ -80,7 +101,7 @@ void load_words(set<string> & word_list, const string& file_name){
     ifstream infile(file_name);
     string word;
     while (infile >> word) {
-        transform(word.begin(), word.end(), word.begin(), ::tolower); // Convert to lowercase
+        transform(word.begin(), word.end(), word.begin(), ::tolower);
         word_list.insert(word);
     }
     infile.close();
@@ -99,7 +120,7 @@ void print_word_ladder(const vector<string>& ladder){
 void verify_word_ladder(){
     set<string> word_list;
     load_words(word_list, "src/words.txt");
-    // vector<string> result = generate_word_ladder("sleep", "awake", word_list);
+    // vector<string> result = generate_word_ladder("car", "cheat", word_list);
     // print_word_ladder(result);
 
 
